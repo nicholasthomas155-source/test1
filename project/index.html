@@ -472,34 +472,47 @@
   }
 
   // ========= OpenAI Helper Functions (Fixed) =========
-  async function callOpenAI(prompt) {
-    try {
-      const response = await fetch("/.netlify/functions/eval", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ prompt })
-      });
+ async function callOpenAI(prompt) {
+  try {
+    console.log("Calling OpenAI function with prompt:", prompt.substring(0, 100) + "...");
+    
+    const response = await fetch("/.netlify/functions/eval", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt })
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+    console.log("Response status:", response.status);
 
-      const data = await response.json();
-      
-      // Check if the response has the expected structure
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        return data.choices[0].message.content.trim();
-      } else {
-        throw new Error("Unexpected API response structure");
-      }
-    } catch (err) {
-      console.error("OpenAI API Error:", err);
-      return `Error: ${err.message}`;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Response error:", errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
-  }
 
+    const data = await response.json();
+    console.log("Response data:", data);
+    
+    // Your Netlify function returns the full OpenAI response
+    // Check if the response has the expected OpenAI structure
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      return data.choices[0].message.content.trim();
+    } 
+    // If there's an error in the response
+    else if (data.error) {
+      throw new Error(`OpenAI API Error: ${data.error}`);
+    }
+    // Unexpected response structure
+    else {
+      console.error("Unexpected response structure:", data);
+      throw new Error("Unexpected API response structure");
+    }
+  } catch (err) {
+    console.error("OpenAI API Error:", err);
+    return `Error: ${err.message}. Please check the console for more details.`;
+  }
   // ========= AI Review Handler (Fixed) =========
   runAIReviewBtn.addEventListener("click", async () => {
     if (!resumeTextGlobal) {
