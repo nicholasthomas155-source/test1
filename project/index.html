@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Smarter JobDiscover AI Tools</title>
+<style>
+  /* --- Light Mode & general styling --- */
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fa;
+    color: #222;
+    margin: 0; padding: 0;
+  }
+  header {
+    background: #004080;
+    color: white;
+    padding: 1em 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+  }
+  header img {
+    height: 36px;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  nav {
+    display: flex;
+    justify-content: center;
+    margin: 1em 0 2em 0;
+    gap: 1.5em;
+  }
+  nav button {
+    background: #007bff;
+    border: none;
+    color: white;
+    padding: 0.6em 1.2em;
+    font-size: 1rem;
+    border-radius: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: background-color 0.25s;
+  }
+  nav button:hover, nav button:focus {
+    background: #0056b3;
+    outline: none;
+  }
+  nav button.active {
+    background: #003d7a;
+  }
+  main {
+    max-width: 900px;
+    margin: 0 auto 3em auto;
+    padding: 0 1em;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  label {
+    font-weight: 600;
+    margin-top: 1em;
+    display: block;
+  }
+  input[type="file"],
+  textarea,
+  select,
+  input[type="text"] {
+    width: 100%;
+    padding: 0.5em;
+    margin-top: 0.3em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  textarea {
+    min-height: 120px;
+    font-family: monospace;
+  }
+  button.action-btn {
+    margin-top: 1em;
+    padding: 0.7em 1.2em;
+    background-color: #28a745;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button.action-btn:hover, button.action-btn:focus {
+    background-color: #1e7e34;
+    outline: none;
+  }
+  ul#jobMatchesList {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 1em;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  ul#jobMatchesList li {
+    padding: 0.75em 1em;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0;
+  }
+  ul#jobMatchesList li:hover,
+  ul#jobMatchesList li:focus {
+    background-color: #e9f5ff;
+    outline: none;
+  }
+  ul#jobMatchesList li:last-child {
+    border-bottom: none;
+  }
+  .match-title {
+    font-weight: 600;
+  }
+  .match-percentage {
+    background-color: #007bff;
+    color: white;
+    padding: 0.15em 0.6em;
+    border-radius: 14px;
+    font-size: 0.85rem;
+  }
+  .match-filter-group {
+    margin: 1em 0 0.5em 0;
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+  }
+  .match-filter-group > div {
+    flex: 1 1 140px;
+  }
+  /* Scrollbar style */
+  ul#jobMatchesList::-webkit-scrollbar {
+    width: 8px;
+  }
+  ul#jobMatchesList::-webkit-scrollbar-thumb {
+    background-color: #007bff;
+    border-radius: 4px;
+  }
+  /* Emoji next to tab labels in nav */
+  nav button span.emoji {
+    font-size: 1.2rem;
+  }
+  /* Result boxes for AI review and cover letters */
+  pre, .output-box {
+    background-color: #e7f3ff;
+    padding: 1em;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1em;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    nav {
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://jobmatch.ai/favicon.ico" alt="Logo" />
+  <h1>Smarter JobDiscover AI Tools</h1>
+</header>
+
+<nav>
+  <button id="tabJobsBtn" class="active" aria-controls="tabJobs" role="tab" aria-selected="true"><span class="emoji">🔍</span> Jobs</button>
+  <button id="tabAIReviewBtn" aria-controls="tabAIReview" role="tab"><span class="emoji">🧠</span> AI Recruiter Review</button>
+  <button id="tabTargetDocsBtn" aria-controls="tabTargetDocs" role="tab"><span class="emoji">📄</span> Targeted Documents</button>
+  <button id="tabVeteransBtn" aria-controls="tabVeterans" role="tab"><span class="emoji">🇺🇸</span> Veterans</button>
+  <button id="tabInterviewPrepBtn" aria-controls="tabInterviewPrep" role="tab"><span class="emoji">🎯</span> Interview Prep</button>
+</nav>
+
+<main>
+  <!-- --- Jobs Tab --- -->
+  <section id="tabJobs" class="tab-content active" role="tabpanel" aria-labelledby="tabJobsBtn">
+    <label for="resumeUpload">Upload your Resume (.txt, .pdf, .docx):</label>
+    <input type="file" id="resumeUpload" accept=".txt,.pdf,.docx" />
+
+    <div class="match-filter-group" aria-label="Job Filters">
+      <div>
+        <label for="filterLocation">Filter: Location (City, State, Zip)</label>
+        <input type="text" id="filterLocation" placeholder="e.g. Seattle, WA" />
+      </div>
+      <div>
+        <label for="filterSalary">Filter: Salary Range</label>
+        <select id="filterSalary" aria-label="Salary Range">
+          <option value="">All</option>
+          <option value="0-50000">$0 - $50,000</option>
+          <option value="50001-75000">$50,001 - $75,000</option>
+          <option value="75001-100000">$75,001 - $100,000</option>
+          <option value="100001-150000">$100,001 - $150,000</option>
+          <option value="150001-9999999">$150,001+</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterRemote">Filter: Remote/In-Office/Hybrid</label>
+        <select id="filterRemote" aria-label="Remote or In-office">
+          <option value="">All</option>
+          <option value="remote">Remote</option>
+          <option value="in-office">In-Office</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterShift">Filter: Shift (1st, 2nd, 3rd)</label>
+        <select id="filterShift" aria-label="Shift">
+          <option value="">All</option>
+          <option value="1st">1st Shift</option>
+          <option value="2nd">2nd Shift</option>
+          <option value="3rd">3rd Shift</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterEducation">Filter: Education Level</label>
+        <select id="filterEducation" aria-label="Education Level">
+          <option value="">All</option>
+          <option value="high school">High School</option>
+          <option value="associate">Associate</option>
+          <option value="bachelor">Bachelor's</option>
+          <option value="master">Master's</option>
+          <option value="doctorate">Doctorate</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="action-btn" id="refreshJobsBtn" aria-label="Refresh Job Matches">🔄 Refresh Job Matches</button>
+
+    <ul id="jobMatchesList" tabindex="0" aria-live="polite" aria-relevant="additions"></ul>
+  </section>
+
+  <!-- --- AI Recruiter Review Tab --- -->
+  <section id="tabAIReview" class="tab-content" role="tabpanel" aria-labelledby="tabAIReviewBtn">
+    <label for="jobSelectForAI">Select Job Posting or Add Your Own Job Description:</label>
+    <select id="jobSelectForAI" aria-label="Select job for AI review" style="width: 100%; max-width: 100%; margin-bottom: 1em;">
+      <option value="">-- Select a job --</option>
+    </select>
+    <textarea id="customJobDescAI" placeholder="Or paste your own job description here..." aria-label="Custom job description"></textarea>
+    <button class="action-btn" id="runAIReviewBtn">🤖 Run AI Review</button>
+    <pre id="aiReviewOutput" class="output-box" aria-live="polite"></pre>
+  </section>
+
+  <!-- --- Targeted Documents Tab --- -->
+  <section id="tabTargetDocs" class="tab-content" role="tabpanel" aria-labelledby="tabTargetDocsBtn">
+    <label for="jobSelectForDocs">Select Job Posting for Targeted Cover Letter:</label>
+    <select id="jobSelectForDocs" aria-label="Select job for cover letter" style="width: 100%; max-width: 100%; margin-bottom: 1em;">
+      <option value="">-- Select a job --</option>
+    </select>
+    <button class="action-btn" id="generateCoverLetterBtn">📝 Generate Cover Letter</button>
+    <pre id="coverLetterOutput" class="output-box" aria-live="polite"></pre>
+  </section>
+
+  <!-- --- Veterans Tab --- -->
+  <section id="tabVeterans" class="tab-content" role="tabpanel" aria-labelledby="tabVeteransBtn">
+    <h2>Veterans Career Tools & Resources</h2>
+    <p>Coming soon! Dedicated resources and AI tools tailored for veterans transitioning to civilian careers.</p>
+  </section>
+
+  <!-- --- Interview Prep Tab --- -->
+  <section id="tabInterviewPrep" class="tab-content" role="tabpanel" aria-labelledby="tabInterviewPrepBtn">
+    <h2>Interview Preparation Flashcards & Skill Gap Suggestions</h2>
+    <p>Coming soon! Personalized flashcards and skill gap analysis to help you nail your interview.</p>
+  </section>
+</main>
+
+<!-- --- Dependencies --- -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+<script>
+
+  // ========= Global State =========
+  let resumeTextGlobal = "";
+  let jobMatches = [];
+
+  // ========= API Config =========
+  const ADZUNA_APP_ID = "f8d67896";
+  const ADZUNA_APP_KEY = "fd7821725223a5c3a30b49c8d0dbf7f4";
+  const ADZUNA_COUNTRY = "us";
+
+  // ========= Element References =========
+  const tabs = {
+    jobs: document.getElementById("tabJobsBtn"),
+    aiReview: document.getElementById("tabAIReviewBtn"),
+    targetDocs: document.getElementById("tabTargetDocsBtn"),
+    veterans: document.getElementById("tabVeteransBtn"),
+    interview: document.getElementById("tabInterviewPrepBtn")
+  };
+  const sections = {
+    jobs: document.getElementById("tabJobs"),
+    aiReview: document.getElementById("tabAIReview"),
+    targetDocs: document.getElementById("tabTargetDocs"),
+    veterans: document.getElementById("tabVeterans"),
+    interview: document.getElementById("tabInterviewPrep")
+  };
+
+  const resumeUpload = document.getElementById("resumeUpload");
+  const resumePreview = document.createElement("pre");
+  resumePreview.id = "resume-preview";
+  resumePreview.style = "background:#f9f9f9;padding:10px;border:1px solid #ccc; max-height:200px;overflow:auto;";
+  resumeUpload.parentNode.insertBefore(resumePreview, resumeUpload.nextSibling);
+
+  const filters = {
+    location: document.getElementById("filterLocation"),
+    salary: document.getElementById("filterSalary"),
+    remote: document.getElementById("filterRemote"),
+    shift: document.getElementById("filterShift"),
+    education: document.getElementById("filterEducation")
+  };
+  const refreshJobsBtn = document.getElementById("refreshJobsBtn");
+  const jobList = document.getElementById("jobMatchesList");
+
+  const jobSelectForAI = document.getElementById("jobSelectForAI");
+  const customJobDescAI = document.getElementById("customJobDescAI");
+  const runAIReviewBtn = document.getElementById("runAIReviewBtn");
+  const aiReviewOutput = document.getElementById("aiReviewOutput");
+
+  const jobSelectForDocs = document.getElementById("jobSelectForDocs");
+  const generateCoverLetterBtn = document.getElementById("generateCoverLetterBtn");
+  const coverLetterOutput = document.getElementById("coverLetterOutput");
+
+  // ========= Tab Navigation =========
+  Object.entries(tabs).forEach(([key, btn]) => {
+    btn.addEventListener("click", () => {
+      Object.values(tabs).forEach(b => b.classList.remove("active"));
+      Object.values(sections).forEach(s => s.classList.remove("active"));
+      btn.classList.add("active");
+      sections[key].classList.add("active");
+    });
+  });
+
+  // ========= Resume Upload Handler =========
+  resumeUpload.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (ext === "txt") {
+        resumeTextGlobal = await (new Response(file)).text();
+      } else if (ext === "pdf") {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const pdf = await pdfjsLib.getDocument(new Uint8Array(reader.result)).promise;
+          let txt = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            txt += content.items.map(item => item.str).join(" ") + "\n";
+          }
+          resumeTextGlobal = txt;
+          resumePreview.textContent = txt.substring(0, 1000) + '...';
+          await renderJobMatches();
+        };
+        reader.readAsArrayBuffer(file);
+        return;
+      } else if (ext === "docx") {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const result = await mammoth.extractRawText({ arrayBuffer: reader.result });
+          resumeTextGlobal = result.value;
+          resumePreview.textContent = resumeTextGlobal.substring(0, 1000) + (resumeTextGlobal.length > 1000 ? '...' : '');
+          await renderJobMatches();
+        };
+        reader.readAsArrayBuffer(file);
+        return;
+      } else {
+        alert("Unsupported file type.");
+        return;
+      }
+
+      resumePreview.textContent = resumeTextGlobal.substring(0, 1000) + (resumeTextGlobal.length > 1000 ? '...' : '');
+      await renderJobMatches();
+    } catch (err) {
+      alert("Error reading file: " + err.message);
+    }
+  });
+
+  // ========= Fetch Jobs from Adzuna =========
+  async function fetchJobs() {
+    const params = new URLSearchParams({
+      app_id: ADZUNA_APP_ID,
+      app_key: ADZUNA_APP_KEY,
+      results_per_page: 20,
+      what: "",
+      where: filters.location.value || ""
+    });
+    const res = await fetch(`https://api.adzuna.com/v1/api/jobs/${ADZUNA_COUNTRY}/search/1?${params}`);
+    if (!res.ok) throw new Error("Adzuna error: " + res.status);
+    const data = await res.json();
+    return data.results || [];
+  }
+
+  // ========= Basic Match Scoring =========
+  function matchScore(job) {
+    if (!resumeTextGlobal) return 0;
+    const jobTxt = (job.title + " " + job.description).toLowerCase();
+    let count = 0;
+    new Set(jobTxt.match(/\b\w{4,}\b/g) || []).forEach(w => {
+      if (resumeTextGlobal.toLowerCase().includes(w)) count++;
+    });
+    return Math.min(100, Math.round((count / 50) * 100)); // simplistic normalization
+  }
+
+  // ========= Render Jobs =========
+  async function renderJobMatches() {
+    if (!resumeTextGlobal) {
+      jobList.innerHTML = "<li>Upload a resume to show jobs</li>";
+      return;
+    }
+    jobList.innerHTML = "<li>Loading jobs...</li>";
+    
+    try {
+      const jobs = await fetchJobs();
+      const filtered = jobs.filter(job => {
+        // Additional client-side filters can go here
+        return true;
+      });
+      jobMatches = filtered.map(j => ({ job: j, score: matchScore(j) }))
+        .sort((a, b) => b.score - a.score);
+
+      jobList.innerHTML = "";
+      jobMatches.forEach((entry, idx) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="match-title">${entry.job.title}</span>
+                        <span class="match-percentage">${entry.score}%</span>`;
+        li.addEventListener("click", () => window.open(entry.job.redirect_url || entry.job.url, "_blank"));
+        jobList.appendChild(li);
+      });
+
+      updateSelectOptions();
+    } catch (error) {
+      jobList.innerHTML = "<li>Error loading jobs. Please try again later.</li>";
+      console.error("Error fetching jobs:", error);
+    }
+  }
+
+  function updateSelectOptions() {
+    [jobSelectForAI, jobSelectForDocs].forEach(select => {
+      select.innerHTML = "<option value=''>— Select a Job —</option>";
+      jobMatches.forEach((entry, idx) => {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = `${entry.job.title} (${entry.score}%)`;
+        select.appendChild(opt);
+      });
+    });
+  }
+
+  // ========= OpenAI Helper Functions (Fixed) =========
+  async function callOpenAI(prompt) {
+    try {
+      const response = await fetch("/.netlify/functions/eval", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Check if the response has the expected structure
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content.trim();
+      } else {
+        throw new Error("Unexpected API response structure");
+      }
+    } catch (err) {
+      console.error("OpenAI API Error:", err);
+      return `Error: ${err.message}`;
+    }
+  }
+
+  // ========= AI Review Handler (Fixed) =========
+  runAIReviewBtn.addEventListener("click", async () => {
+    if (!resumeTextGlobal) {
+      alert("Upload resume first.");
+      return;
+    }
+    
+    let jd = customJobDescAI.value.trim();
+    if (!jd && jobSelectForAI.value !== "") {
+      jd = jobMatches[jobSelectForAI.value].job.description;
+    }
+    
+    if (!jd) {
+      alert("Select a job or paste a description.");
+      return;
+    }
+    
+    aiReviewOutput.textContent = "Thinking...";
+    
+    const prompt = `You are an AI recruiter. Compare this resume to the job description.
+Highlight strengths, gaps, and provide a match score (0-100).
+
+Job Description:
+${jd}
+
+Resume:
+${resumeTextGlobal}`;
+
+    try {
+      const result = await callOpenAI(prompt);
+      aiReviewOutput.textContent = result;
+    } catch (error) {
+      aiReviewOutput.textContent = "Error generating review. Please try again.";
+      console.error("AI Review Error:", error);
+    }
+  });
+
+  // ========= Cover Letter Handler (Fixed) =========
+  generateCoverLetterBtn.addEventListener("click", async () => {
+    if (!resumeTextGlobal) {
+      alert("Upload resume first.");
+      return;
+    }
+    
+    if (jobSelectForDocs.value === "") {
+      alert("Select a job.");
+      return;
+    }
+    
+    const job = jobMatches[jobSelectForDocs.value].job;
+    coverLetterOutput.textContent = "Generating cover letter...";
+    
+    const prompt = `Write a professional cover letter for this job posting based on the provided resume.
+
+Job Description:
+${job.description}
+
+Resume:
+${resumeTextGlobal}
+
+Please write a compelling cover letter that highlights relevant experience and shows enthusiasm for the role.`;
+
+    try {
+      const result = await callOpenAI(prompt);
+      coverLetterOutput.textContent = result;
+    } catch (error) {
+      coverLetterOutput.textContent = "Error generating cover letter. Please try again.";
+      console.error("Cover Letter Error:", error);
+    }
+  });
+
+  // ========= Initialize =========
+  refreshJobsBtn.addEventListener("click", renderJobMatches);
+
+</script>
+</body>
+</html>
